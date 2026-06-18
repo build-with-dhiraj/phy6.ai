@@ -1,8 +1,4 @@
-"use client";
-
 import * as React from "react";
-import { motion, useReducedMotion } from "motion/react";
-import { renaissanceTransition, scrollReveal, wordReveal } from "@/lib/motion";
 import { cn } from "@/lib/utils";
 
 /**
@@ -10,8 +6,13 @@ import { cn } from "@/lib/utils";
  * Pattern adapted from build-with-dhiraj/Frontend-Mastery (DhirajTextReveal),
  * re-tuned to easeOutQuart and a slower, classical cadence.
  *
+ * Animation is CSS-only, gated behind `motion-safe` (Tailwind compiles to
+ * `prefers-reduced-motion: no-preference`) so SSR and client markup are
+ * identical — no hydration mismatch. Resting styles are the final revealed
+ * state; under reduced motion the words simply show fully visible.
+ *
  * Accessibility: the full text is exposed via aria-label; the animated words
- * are aria-hidden. Honors prefers-reduced-motion (renders plainly).
+ * are aria-hidden.
  */
 export function TextReveal({
   text,
@@ -26,31 +27,25 @@ export function TextReveal({
   delayStep?: number;
   startDelay?: number;
 }) {
-  const reduceMotion = useReducedMotion();
   const words = text.split(" ");
-
-  if (reduceMotion) {
-    return <Tag className={className}>{text}</Tag>;
-  }
 
   return (
     <Tag className={cn("overflow-hidden", className)} aria-label={text} data-reveal>
       <span aria-hidden="true" className="inline-flex flex-wrap justify-center gap-x-[0.28em]">
         {words.map((word, index) => (
           <span key={`${word}-${index}`} className="inline-block overflow-hidden pb-[0.08em]">
-            <motion.span
+            <span
               data-reveal
-              variants={wordReveal}
-              initial="hidden"
-              animate="visible"
-              transition={{
-                ...renaissanceTransition.word,
-                delay: startDelay + index * delayStep,
+              className={cn(
+                "inline-block",
+                "motion-safe:animate-[wordreveal_800ms_cubic-bezier(0.25,1,0.5,1)_both]",
+              )}
+              style={{
+                animationDelay: `${startDelay + index * delayStep}s`,
               }}
-              className="inline-block"
             >
               {word}
-            </motion.span>
+            </span>
           </span>
         ))}
       </span>
@@ -61,6 +56,9 @@ export function TextReveal({
 /**
  * Whole-block reveal as the element scrolls into view.
  * Pattern adapted from Frontend-Mastery (DhirajScrollReveal).
+ *
+ * Scroll gating uses CSS `animation-timeline: view()` under motion-safe only,
+ * so markup never branches on a JS reduced-motion hook.
  */
 export function ScrollReveal({
   children,
@@ -71,23 +69,9 @@ export function ScrollReveal({
   className?: string;
   as?: "div" | "section" | "p" | "li";
 }) {
-  const reduceMotion = useReducedMotion();
-  const MotionTag = motion[Tag];
-
-  if (reduceMotion) {
-    return <Tag className={className}>{children}</Tag>;
-  }
-
   return (
-    <MotionTag
-      data-reveal
-      variants={scrollReveal}
-      initial="hidden"
-      whileInView="visible"
-      viewport={{ once: true, amount: 0.4 }}
-      className={className}
-    >
+    <Tag data-reveal className={cn("scroll-reveal", className)}>
       {children}
-    </MotionTag>
+    </Tag>
   );
 }

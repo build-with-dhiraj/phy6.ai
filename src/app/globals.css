@@ -149,14 +149,51 @@ h3 {
     scroll-behavior: auto !important;
   }
 
-  /* Reveal safety net. The motion hook resolves a frame after mount, so the
-     first client render can still commit the animated (opacity:0) path before
-     it flips to the static one. Under reduced motion that would leave
-     scroll-gated content invisible if it never enters the viewport. Force any
-     reveal wrapper fully visible, independent of JS timing or scroll. */
+  /* Reveal safety net: force any reveal wrapper fully visible when motion is
+     reduced, independent of scroll position or animation fill/backfill. */
   [data-reveal] {
     opacity: 1 !important;
     transform: none !important;
+  }
+}
+
+/* --- Text reveals (CSS, hydration-safe) --------------------- */
+/* Resting/default styles are the final revealed state. Under motion-safe the
+   animations replay from hidden; under prefers-reduced-motion they are
+   suppressed and [data-reveal] above keeps copy fully visible. */
+
+@keyframes wordreveal {
+  from {
+    opacity: 0;
+    transform: translateY(22px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scrollreveal {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Scroll-gated block reveal. Mirrors the prior whileInView config: ~40% of the
+   element must enter the viewport before the reveal completes (amount: 0.4),
+   eased over ~700ms easeOutQuart. Only when view timelines are supported. */
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .scroll-reveal {
+      animation: scrollreveal cubic-bezier(0.25, 1, 0.5, 1) both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 40%;
+    }
   }
 }
 
@@ -168,15 +205,79 @@ h3 {
   }
 }
 
-/* --- Scroll cue motion -------------------------------------- */
-@keyframes scrollcue {
-  0%,
-  100% {
-    transform: translateY(0);
-    opacity: 0.7;
+/* --- Inked plate "develop" ---------------------------------- */
+/* The plate "develops" like ink settling into paper: a faint parchment-washed
+   low-opacity state resolves to full on a left-to-right sweep (~900ms,
+   easeOutQuart). Driven by CSS (not a JS reduced-motion branch) so the SSR and
+   client markup are identical, with no hydration mismatch. The resting/default
+   state IS the final state, so under prefers-reduced-motion (where the
+   animation is suppressed) the plate simply shows fully developed. */
+@keyframes platedevelop {
+  from {
+    opacity: 0.18;
+    clip-path: inset(0 100% 0 0);
   }
-  50% {
-    transform: translateY(5px);
+  to {
     opacity: 1;
+    clip-path: inset(0 0% 0 0);
+  }
+}
+
+@keyframes platewash {
+  from {
+    opacity: 0.55;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/* --- Inked plate edge dissolve ------------------------------ */
+/* The plate dissolves into the parchment on its inner edge. On the desktop
+   split that inner edge is the gutter (left) side; on the mobile stack the
+   plate is a band, so the seam to soften is the top edge instead. */
+.inked-plate-mask {
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    black 14%,
+    black 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    black 14%,
+    black 100%
+  );
+}
+
+@media (min-width: 768px) {
+  .inked-plate-mask {
+    -webkit-mask-image: linear-gradient(
+      to right,
+      transparent 0%,
+      black 12%,
+      black 100%
+    );
+    mask-image: linear-gradient(
+      to right,
+      transparent 0%,
+      black 12%,
+      black 100%
+    );
+  }
+}
+
+/* --- Hero gutter rule --------------------------------------- */
+/* The hairline rule between the type column and the plate draws itself
+   top-to-bottom on load. Motion-safe only; under reduced motion the rule is
+   shown at full height with no draw (handled by the motion-reduce variant in
+   markup, which sets scale-y-100 from the start). */
+@keyframes gutterdraw {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
   }
 }
