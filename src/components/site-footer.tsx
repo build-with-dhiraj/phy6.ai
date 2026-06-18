@@ -50,9 +50,10 @@ export function SiteFooter() {
         <nav aria-label="Social and contact links" className="mt-[var(--space-3)]">
           <ul className="flex items-center justify-center gap-[var(--space-3)]">
             <li>
-              {/* TODO: replace # with the real X/Twitter profile URL */}
               <a
-                href="#"
+                href="https://x.com/dhiraj_pawar_"
+                target="_blank"
+                rel="me noopener noreferrer"
                 aria-label="phy6 on X"
                 className="inline-flex h-9 w-9 items-center justify-center rounded-[2px] text-[var(--color-text-secondary)] transition-colors hover:text-[var(--color-oxblood)]"
               >
@@ -60,9 +61,10 @@ export function SiteFooter() {
               </a>
             </li>
             <li>
-              {/* TODO: replace # with the real GitHub URL */}
               <a
-                href="#"
+                href="https://github.com/build-with-dhiraj"
+                target="_blank"
+                rel="me noopener noreferrer"
                 aria-label="phy6 on GitHub"
                 className="inline-flex h-9 w-9 items-center justify-center rounded-[2px] text-[var(--color-text-secondary)] transition-colors hover:text-[var(--color-oxblood)]"
               >
@@ -70,9 +72,8 @@ export function SiteFooter() {
               </a>
             </li>
             <li>
-              {/* TODO: replace with the real contact address */}
               <a
-                href="mailto:hello@phy6.ai"
+                href="mailto:dhiraj@phy6.ai"
                 aria-label="Email phy6"
                 className="inline-flex h-9 w-9 items-center justify-center rounded-[2px] text-[var(--color-text-secondary)] transition-colors hover:text-[var(--color-oxblood)]"
               >
