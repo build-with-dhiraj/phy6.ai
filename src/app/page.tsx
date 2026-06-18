@@ -6,6 +6,7 @@ import { EmailCapture } from "@/components/email-capture";
 import { FiligreeDivider, GoldenSpiralFlourish } from "@/components/ornaments";
 import { SiteFooter } from "@/components/site-footer";
 import { ScrollReveal, TextReveal } from "@/components/text-reveal";
+import { InkedPlate } from "@/components/ui/inked-plate";
 
 const SIGNATURE_LINES = [
   "Specialization built the modern world. Connection will build the next one.",
@@ -17,69 +18,54 @@ export default function Home() {
   return (
     <main>
       {/* ============================================================
-          1) HERO — constellation canvas behind the wordmark
+          1) HERO :: "The Inked Plate": asymmetric 38/62 golden split.
+             Left: wordmark + tagline on bare parchment (type never over the
+             image, so contrast stays AAA), with the ambient constellation
+             behind it. Right: the developed Renaissance plate. A single
+             hairline rule draws itself down the gutter on load. One 100dvh fold.
           ============================================================ */}
       <section
-        className="relative flex min-h-[100svh] flex-col items-center justify-center overflow-hidden px-[var(--space-4)]"
+        className="relative grid h-[100dvh] grid-cols-1 grid-rows-[1fr_42dvh] overflow-hidden md:grid-cols-[38fr_62fr] md:grid-rows-1"
         aria-label="Introduction"
       >
-        {/* Ambient background: static fallback + animated canvas on top.
-            Canvas is hidden under prefers-reduced-motion (CSS), leaving the
-            faint static SVG. With no JS, only the SVG renders. */}
-        <div className="absolute inset-0 -z-10">
-          <HeroFallback />
-          <ConstellationCanvas />
-          {/* gentle parchment vignette so words always stay legible */}
-          <div
-            className="absolute inset-0"
-            style={{
-              background:
-                "radial-gradient(ellipse at center, transparent 30%, var(--color-bg-parchment) 92%)",
-            }}
-            aria-hidden="true"
-          />
-        </div>
+        {/* LEFT :: type column on bare parchment */}
+        <div className="relative flex flex-col justify-center px-[var(--space-4)] py-[var(--space-5)] md:px-[var(--space-5)]">
+          {/* Ambient constellation behind the type. Static SVG fallback + the
+              animated canvas on top (canvas hidden under reduced-motion). The
+              `ornament` class hides the whole layer below 600px so it never
+              crowds the wordmark on phones. */}
+          <div className="ornament absolute inset-0 -z-10" aria-hidden="true">
+            <HeroFallback />
+            <ConstellationCanvas />
+          </div>
 
-        <div className="relative flex flex-col items-center text-center">
-          <TextReveal
-            as="h1"
-            text="phy6"
-            className="font-display text-[clamp(4rem,18vw,9rem)] font-bold leading-none text-[var(--color-text-primary)]"
-          />
-          <ScrollReveal
-            as="p"
-            className="mt-[var(--space-3)] font-display text-[clamp(1.4rem,4vw,2.2rem)] font-medium italic text-[var(--color-text-secondary)]"
-          >
-            Learn everything, waste nothing.
-          </ScrollReveal>
-        </div>
-
-        {/* Quiet scroll cue */}
-        <a
-          href="#manifesto"
-          className="absolute bottom-[var(--space-5)] flex flex-col items-center gap-2 text-[var(--color-text-tertiary)] transition-colors hover:text-[var(--color-text-secondary)]"
-          aria-label="Read on: scroll to the manifesto"
-        >
-          <span className="font-body text-[var(--text-small)] tracking-wide">
-            Read on
-          </span>
-          <svg
-            width="16"
-            height="22"
-            viewBox="0 0 16 22"
-            fill="none"
-            aria-hidden="true"
-            className="motion-safe:animate-[scrollcue_2.4s_ease-in-out_infinite]"
-          >
-            <path
-              d="M8 1 v16 M2 12 l6 6 6-6"
-              stroke="currentColor"
-              strokeWidth="0.75"
-              strokeLinecap="round"
-              strokeLinejoin="round"
+          <div className="relative flex flex-col items-start text-left">
+            <TextReveal
+              as="h1"
+              text="phy6"
+              className="font-display text-[clamp(4rem,12vw,8rem)] font-bold leading-none text-[var(--color-text-primary)]"
             />
-          </svg>
-        </a>
+            <ScrollReveal
+              as="p"
+              className="mt-[var(--space-3)] font-display text-[clamp(1.3rem,3.2vw,2rem)] font-medium italic text-[var(--color-text-secondary)]"
+            >
+              Learn everything, waste nothing.
+            </ScrollReveal>
+          </div>
+        </div>
+
+        {/* GUTTER RULE :: hairline between the columns, drawing itself top to
+            bottom on load. Hidden on the mobile stack (where the split is a
+            horizontal band, not a vertical gutter). */}
+        <div
+          className="pointer-events-none absolute inset-y-0 left-[38%] hidden w-px origin-top bg-[var(--color-border)] md:block motion-safe:animate-[gutterdraw_900ms_cubic-bezier(0.16,1,0.3,1)]"
+          aria-hidden="true"
+        />
+
+        {/* RIGHT :: the developed plate (its own band on the mobile stack). */}
+        <div className="relative min-h-0">
+          <InkedPlate />
+        </div>
       </section>
 
       {/* ============================================================
