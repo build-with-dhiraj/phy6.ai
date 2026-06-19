@@ -42,6 +42,18 @@ next-env.d.ts
 
 # design review screenshots (large, not for repo)
 /.design-review/
+/.qa-screens/
+/.playwright-mcp/
+
+# local IDE / agent config (not for repo)
+/.cursor/
+/.claude/
+
+# favicon exploration artifacts (production assets live in public/)
+/brand/favicon-options/
+/public/favicon-options/
+/public/favicon-preview.html
+/public/favicon-preview-marek2.html
 
 # stray unrelated file (do not commit)
 /x_curiosity.png

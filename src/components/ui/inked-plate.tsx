@@ -5,42 +5,54 @@ import Image from "next/image";
 import { cn } from "@/lib/utils";
 
 /**
- * The image "plate" of the Inked Plate hero (right column, ~62%).
+ * Renaissance image "plate" for asymmetric folds (hero + manifesto + vault).
  *
- * - Carries the graded Renaissance capriccio, bleeding to top/right/bottom.
- * - Dissolves into the parchment on its inner edge (gutter-side / left on the
- *   desktop split, top edge on the mobile band) via a gradient mask
- *   (`.inked-plate-mask`), so there is no hard seam against the parchment.
- * - On load it "develops" like ink settling into paper: a faint
- *   parchment-washed low-opacity state resolves to full on a left-to-right
- *   sweep (~900ms, easeOutQuart). This is driven entirely by CSS animations
- *   gated behind `motion-safe`/`motion-reduce` (Tailwind compiles these to
- *   `prefers-reduced-motion` media queries). Because the markup never branches
- *   on a JS reduced-motion hook, SSR and client render identically, with no
- *   hydration mismatch. The elements' resting/default styles ARE the final
- *   developed state, so under reduced motion the plate just shows fully.
- * - Desktop (fine-pointer, motion-safe) only: a soft pointer "loupe" lifts
- *   local contrast/opacity under the cursor. Driven by CSS custom properties
- *   updated on pointermove, never React state per frame. The listener is
- *   attached only after mount, only on fine pointers, and never under reduced
- *   motion, so it cannot affect hydration.
- *
- * The image is the LCP element: served via next/image with `priority`, a
- * correct `sizes`, and a parchment-toned blur placeholder. No runtime-expensive
- * CSS filters sit on the LCP path.
+ * - Bleeds to top/right/bottom; dissolves into parchment on the inner edge
+ *   via mask modes.
+ * - Develops like ink settling into paper under motion-safe CSS.
+ * - Optional loupe for the hero LCP plate only.
  */
 
-// Parchment-toned blur placeholder (20px tall, same light grade as the asset).
 const BLUR_DATA_URL =
   "data:image/jpeg;base64,/9j/2wBDABQODxIPDRQSEBIXFRQYHjIhHhwcHj0sLiQySUBMS0dARkVQWnNiUFVtVkVGZIhlbXd7gYKBTmCNl4x9lnN+gXz/2wBDARUXFx4aHjshITt8U0ZTfHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHx8fHz/wAARCAAUABIDASIAAhEBAxEB/8QAGAABAAMBAAAAAAAAAAAAAAAAAAEDBAX/xAAeEAACAgMAAwEAAAAAAAAAAAAAAQIDBBESBRQhMf/EABcBAAMBAAAAAAAAAAAAAAAAAAACAwH/xAAYEQEBAAMAAAAAAAAAAAAAAAAAEQECIf/aAAwDAQACEQMRAD8Ar8NgqadnLRHk6pVWcxjtNG7Hs9XFjzJNNfTBkX7nvvbaJY35FI5vEAG/oFaohlXKppTeitXWN76AKQiHZLf6AAD/2Q==";
 
-export function InkedPlate({ className }: { className?: string }) {
-  const rootRef = React.useRef<HTMLDivElement | null>(null);
+type PlateMask = "gutter" | "leading" | "radial";
 
-  // Desktop loupe: only on fine pointers (mouse) and when motion is allowed.
-  // Updates CSS custom properties directly on pointermove, with no React
-  // re-render per frame. Runs only after mount, so it never affects hydration.
+type InkedPlateProps = {
+  className?: string;
+  src?: string;
+  priority?: boolean;
+  sizes?: string;
+  loupe?: boolean;
+  imageClassName?: string;
+  /** Plate sits in the left column; dissolve on the right/gutter edge. */
+  leading?: boolean;
+  /** Mask mode: gutter (hero), leading (manifesto), radial (vault). */
+  mask?: PlateMask;
+};
+
+function maskClass(mask: PlateMask, leading: boolean) {
+  if (mask === "radial") return "inked-plate-mask-radial";
+  if (mask === "leading" || leading) return "inked-plate-mask-leading";
+  return "inked-plate-mask";
+}
+
+export function InkedPlate({
+  className,
+  src = "/hero-plate.jpg",
+  priority = false,
+  sizes = "(max-width: 768px) 100vw, 62vw",
+  loupe = false,
+  imageClassName,
+  leading = false,
+  mask,
+}: InkedPlateProps) {
+  const rootRef = React.useRef<HTMLDivElement | null>(null);
+  const resolvedMask: PlateMask = mask ?? (leading ? "leading" : "gutter");
+
   React.useEffect(() => {
+    if (!loupe) return;
+
     const el = rootRef.current;
     if (!el || typeof window === "undefined") return;
 
@@ -48,11 +60,11 @@ export function InkedPlate({ className }: { className?: string }) {
       "(prefers-reduced-motion: reduce)",
     ).matches;
     const finePointer = window.matchMedia("(pointer: fine)").matches;
-    if (reduced || !finePointer) return; // never bind loupe on touch / reduced
+    if (reduced || !finePointer) return;
 
     let frame = 0;
     const onMove = (e: PointerEvent) => {
-      if (frame) return; // coalesce to one update per animation frame
+      if (frame) return;
       frame = requestAnimationFrame(() => {
         frame = 0;
         const rect = el.getBoundingClientRect();
@@ -74,18 +86,18 @@ export function InkedPlate({ className }: { className?: string }) {
       el.removeEventListener("pointermove", onMove);
       el.removeEventListener("pointerleave", onLeave);
     };
-  }, []);
+  }, [loupe]);
 
   return (
     <div
       ref={rootRef}
       className={cn(
-        "inked-plate-mask relative h-full w-full overflow-hidden",
+        maskClass(resolvedMask, leading),
+        "relative h-full w-full overflow-hidden",
         className,
       )}
       style={
         {
-          // Loupe defaults (so SSR markup + reduced-motion render cleanly).
           ["--loupe-x" as string]: "50%",
           ["--loupe-y" as string]: "50%",
           ["--loupe-o" as string]: "0",
@@ -93,48 +105,38 @@ export function InkedPlate({ className }: { className?: string }) {
       }
       aria-hidden="true"
     >
-      {/* The plate. Resting state = fully developed (opacity 1, no clip). Under
-          motion-safe it replays the develop sweep from a parchment-washed,
-          left-to-right wipe. Under reduced motion the animation is suppressed
-          and it simply shows fully developed. */}
       <div className="absolute inset-0 motion-safe:animate-[platedevelop_900ms_cubic-bezier(0.16,1,0.3,1)]">
         <Image
-          src="/hero-plate.jpg"
+          src={src}
           alt=""
           fill
-          priority
-          placeholder="blur"
-          blurDataURL={BLUR_DATA_URL}
-          sizes="(max-width: 768px) 100vw, 62vw"
-          className="object-cover object-center"
+          priority={priority}
+          unoptimized={!priority}
+          placeholder={priority ? "blur" : "empty"}
+          blurDataURL={priority ? BLUR_DATA_URL : undefined}
+          sizes={sizes}
+          className={cn("object-cover object-center", imageClassName)}
         />
       </div>
 
-      {/* Parchment wash that recedes as the plate develops, selling the "ink
-          settling into paper" read without touching the LCP image. Resting
-          state = fully transparent, so under reduced motion it is invisible;
-          motion-safe replays the fade-out. */}
       <div
         className="pointer-events-none absolute inset-0 opacity-0 motion-safe:animate-[platewash_900ms_cubic-bezier(0.16,1,0.3,1)]"
         style={{ backgroundColor: "var(--color-bg-parchment)" }}
         aria-hidden="true"
       />
 
-      {/* Loupe: a soft radial that lifts local contrast/opacity under the
-          cursor. Pure CSS, driven by --loupe-* custom props. Opacity is 0
-          until a fine pointer moves over the plate; the listener is never
-          attached on touch or under reduced motion, and the layer is hidden
-          under motion-reduce. */}
-      <div
-        className="pointer-events-none absolute inset-0 mix-blend-overlay motion-reduce:hidden"
-        style={{
-          opacity: "var(--loupe-o)",
-          transition: "opacity 240ms ease-out",
-          background:
-            "radial-gradient(circle 170px at var(--loupe-x) var(--loupe-y), rgba(255,255,255,0.12) 0%, rgba(255,255,255,0) 70%)",
-        }}
-        aria-hidden="true"
-      />
+      {loupe ? (
+        <div
+          className="pointer-events-none absolute inset-0 mix-blend-overlay motion-reduce:hidden"
+          style={{
+            opacity: "var(--loupe-o)",
+            transition: "opacity 240ms ease-out",
+            background:
+              "radial-gradient(circle 170px at var(--loupe-x) var(--loupe-y), rgba(255,255,255,0.12) 0%, rgba(255,255,255,0) 70%)",
+          }}
+          aria-hidden="true"
+        />
+      ) : null}
     </div>
   );
 }

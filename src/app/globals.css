@@ -234,8 +234,9 @@ h3 {
 
 /* --- Inked plate edge dissolve ------------------------------ */
 /* The plate dissolves into the parchment on its inner edge. On the desktop
-   split that inner edge is the gutter (left) side; on the mobile stack the
-   plate is a band, so the seam to soften is the top edge instead. */
+   split that inner edge is the gutter (left) side for trailing plates (hero);
+   on the mobile stack the plate is a band, so the seam to soften is the top
+   edge instead. */
 .inked-plate-mask {
   -webkit-mask-image: linear-gradient(
     to bottom,
@@ -266,6 +267,57 @@ h3 {
       black 100%
     );
   }
+}
+
+/* Leading plate (manifesto fold): image on the LEFT column; dissolve on the
+   right/gutter edge on desktop. Mobile still softens the bottom band seam at
+   the top. */
+.inked-plate-mask-leading {
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    black 14%,
+    black 100%
+  );
+  mask-image: linear-gradient(
+    to bottom,
+    transparent 0%,
+    black 14%,
+    black 100%
+  );
+}
+
+@media (min-width: 768px) {
+  .inked-plate-mask-leading {
+    -webkit-mask-image: linear-gradient(
+      to right,
+      black 0%,
+      black 88%,
+      transparent 100%
+    );
+    mask-image: linear-gradient(
+      to right,
+      black 0%,
+      black 88%,
+      transparent 100%
+    );
+  }
+}
+
+/* Vault interlude: radial vignette dissolves ornate ceiling into parchment */
+.inked-plate-mask-radial {
+  -webkit-mask-image: radial-gradient(
+    ellipse 72% 68% at 50% 48%,
+    black 0%,
+    black 52%,
+    transparent 100%
+  );
+  mask-image: radial-gradient(
+    ellipse 72% 68% at 50% 48%,
+    black 0%,
+    black 52%,
+    transparent 100%
+  );
 }
 
 /* --- Hero gutter rule --------------------------------------- */
