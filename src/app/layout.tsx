@@ -22,18 +22,37 @@ export const metadata: Metadata = {
   title: "phy6 — Learn everything, waste nothing.",
   description:
     "phy6 brings back the Renaissance mind. Learn the handful of first principles every hard idea is built from, and nothing is off-limits to you.",
+  manifest: "/manifest.webmanifest",
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicon-96x96.png", sizes: "96x96", type: "image/png" },
+    ],
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
+  },
   openGraph: {
     title: "phy6 — Learn everything, waste nothing.",
     description:
       "Every hard idea is built from a handful of simple, beautiful first principles. Learn those, and nothing is off-limits.",
     type: "website",
     siteName: "phy6.ai",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "phy6 — Learn everything, waste nothing.",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "phy6 — Learn everything, waste nothing.",
     description:
       "Every hard idea is built from a handful of simple, beautiful first principles. Learn those, and nothing is off-limits.",
+    images: ["/og-image.png"],
   },
 };
 
