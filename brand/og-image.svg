@@ -2,23 +2,8 @@
   <rect width="1200" height="630" fill="#F8F3ED"/>
   <g transform="translate(72, 59) scale(0.92)">
     <rect width="512" height="512" fill="#F8F3ED"/>
-    <path fill="none" stroke="#1A1410" stroke-width="24" stroke-linecap="round" d="M80 360 C120 280 200 200 320 180 C380 170 420 200 440 240"/>
-    <path fill="none" stroke="#6A4A33" stroke-width="14" stroke-linecap="round" opacity="0.5" d="M100 380 C180 320 280 300 400 320"/>
+    <path fill="none" stroke="#1A1410" stroke-width="32" stroke-linecap="round" d="M80 360 C120 280 200 200 320 180 C380 170 420 200 440 240"/>
+    <path fill="none" stroke="#6A4A33" stroke-width="18" stroke-linecap="round" opacity="0.45" d="M100 380 C180 320 280 300 400 320"/>
   </g>
-  <text
-    x="560"
-    y="340"
-    font-family="Georgia, 'Times New Roman', serif"
-    font-size="120"
-    font-weight="600"
-    fill="#1A1410"
-  >phy6</text>
-  <text
-    x="560"
-    y="420"
-    font-family="Georgia, 'Times New Roman', serif"
-    font-size="36"
-    font-style="italic"
-    fill="#4A4035"
-  >Learn everything, waste nothing.</text>
+  <!-- Typography rasterized via generate-brand-assets.mjs (Cormorant / EB Garamond) -->
 </svg>

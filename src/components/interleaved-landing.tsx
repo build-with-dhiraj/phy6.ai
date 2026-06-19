@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { Wordmark } from "@/components/brand/wordmark";
 import { EmailCapture } from "@/components/email-capture";
 import {
   GalleryJourneyBackdrop,
@@ -8,7 +9,7 @@ import {
 } from "@/components/gallery-journey-backdrop";
 import { FiligreeDivider, GoldenSpiralFlourish } from "@/components/ornaments";
 import { SiteFooter } from "@/components/site-footer";
-import { ScrollReveal, TextReveal } from "@/components/text-reveal";
+import { ScrollReveal } from "@/components/text-reveal";
 import { InkedPlate } from "@/components/ui/inked-plate";
 import { StaticGalleryGrid } from "@/components/ui/scroll-zoom-gallery";
 import {
@@ -51,11 +52,7 @@ function JourneyContent({
           </div>
 
           <div className="relative flex flex-col items-start text-left">
-            <TextReveal
-              as="h1"
-              text="phy6"
-              className="font-display text-[clamp(4rem,12vw,8rem)] font-bold leading-none text-[var(--color-text-primary)]"
-            />
+            <Wordmark variant="hero" />
             <ScrollReveal
               as="p"
               className="mt-[var(--space-3)] font-display text-[clamp(1.3rem,3.2vw,2rem)] font-medium italic text-[var(--color-text-secondary)]"

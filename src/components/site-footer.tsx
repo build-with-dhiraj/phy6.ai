@@ -1,4 +1,5 @@
 import { Mail } from "lucide-react";
+import { Wordmark } from "@/components/brand/wordmark";
 import { FiligreeDivider } from "@/components/ornaments";
 
 /**
@@ -43,9 +44,7 @@ export function SiteFooter() {
     <footer className="w-full bg-[var(--color-surface)]">
       <FiligreeDivider />
       <div className="mx-auto flex max-w-[var(--measure)] flex-col items-center px-[var(--space-4)] pb-[var(--space-5)] pt-[var(--space-4)] text-center">
-        <p className="font-display text-[clamp(1.618rem,4vw,2rem)] font-semibold tracking-tight text-[var(--color-text-primary)]">
-          phy6<span className="text-[var(--color-text-tertiary)]">.ai</span>
-        </p>
+        <Wordmark variant="footer" />
 
         <nav aria-label="Social and contact links" className="mt-[var(--space-3)]">
           <ul className="flex items-center justify-center gap-[var(--space-3)]">

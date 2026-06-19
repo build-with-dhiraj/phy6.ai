@@ -115,3 +115,25 @@ A fixed, full-bleed `<canvas>` behind the hero text, low visual weight:
   `visibilitychange` and when scrolled off-screen.
 - Reduced-motion / no-JS fallback: a single static, very faint constellation
   (a few nodes + 2–3 lines) at low opacity.
+
+---
+
+## Logo & wordmark
+
+**Mark** — Marek2 reclining-curve silhouette (Renaissance figure as a double curve).
+Source: `brand/favicon-mark.svg`, inline React: `BrandMark` in `src/components/brand/brand-mark.tsx`.
+
+| Surface | Component | Notes |
+| --- | --- | --- |
+| Favicon / PWA | `brand/favicon-mark.svg` → `scripts/generate-brand-assets.mjs` | Ink primary stroke, sepia shadow curve; strokes 32 / 18 for 16px legibility |
+| Hero wordmark | `Wordmark` variant `hero` | Cormorant semibold, `clamp(4rem,12vw,8rem)`; animated via `TextReveal` |
+| Footer wordmark | `Wordmark` variant `footer` | Same weight as hero; shows `.ai` suffix in tertiary |
+| OG / social | `public/og-image.png` | Mark + Cormorant `phy6` + italic EB Garamond tagline (generated, not Georgia) |
+| Icon-only | `Wordmark` variant `icon-only` | 32px `BrandMark` for future nav / metadata |
+
+**Rules**
+
+- Always use `Wordmark` / `BrandMark` — do not hand-roll `phy6` typography in sections.
+- Hero and footer share **font-semibold (600)** and display family; only scale differs.
+- `.ai` suffix: tertiary color, optional on hero (`showDomain`), default on footer.
+- Mark uses ink on parchment; secondary curve at ~45% opacity sepia in raster assets, `currentColor` at 45% opacity in UI.
