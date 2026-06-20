@@ -50,11 +50,16 @@ function setGalleryOpacities(
   });
 }
 
-/** Crossfade 0→1 while fold bottom moves from viewport bottom (vh) to top (0). */
+/** Crossfade completes over this fraction of viewport height (1 = full vh). */
+const STITCH_CROSSFADE_ZONE = 0.5;
+
+/** Crossfade 0→1 while fold bottom moves through the crossfade zone. */
 function stitchCrossfadeProgress(bottom: number, viewportHeight: number) {
   if (bottom > viewportHeight) return 0;
-  if (bottom <= 0) return 1;
-  return clamp01(1 - bottom / viewportHeight);
+  const zone = viewportHeight * STITCH_CROSSFADE_ZONE;
+  const endBottom = viewportHeight - zone;
+  if (bottom <= endBottom) return 1;
+  return clamp01(1 - (bottom - endBottom) / zone);
 }
 
 type GalleryJourneyBackdropProps = {
