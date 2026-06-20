@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { Wordmark } from "@/components/brand/wordmark";
 import { EmailCapture } from "@/components/email-capture";
 import {
   GalleryJourneyBackdrop,
@@ -8,7 +9,7 @@ import {
 } from "@/components/gallery-journey-backdrop";
 import { FiligreeDivider, GoldenSpiralFlourish } from "@/components/ornaments";
 import { SiteFooter } from "@/components/site-footer";
-import { ScrollReveal, TextReveal } from "@/components/text-reveal";
+import { ScrollReveal } from "@/components/text-reveal";
 import { InkedPlate } from "@/components/ui/inked-plate";
 import { StaticGalleryGrid } from "@/components/ui/scroll-zoom-gallery";
 import {
@@ -29,10 +30,12 @@ function JourneyContent({
   block,
   heroStitchRef,
   manifestoStitchRef,
+  footerStitchRef,
 }: {
   block: { type: string };
   heroStitchRef?: React.RefObject<HTMLDivElement | null>;
   manifestoStitchRef?: React.RefObject<HTMLDivElement | null>;
+  footerStitchRef?: React.RefObject<HTMLElement | null>;
 }) {
   if (block.type === "hero") {
     return (
@@ -51,11 +54,7 @@ function JourneyContent({
           </div>
 
           <div className="relative flex flex-col items-start text-left">
-            <TextReveal
-              as="h1"
-              text="phy6"
-              className="font-display text-[clamp(4rem,12vw,8rem)] font-bold leading-none text-[var(--color-text-primary)]"
-            />
+            <Wordmark variant="hero" />
             <ScrollReveal
               as="p"
               className="mt-[var(--space-3)] font-display text-[clamp(1.3rem,3.2vw,2rem)] font-medium italic text-[var(--color-text-secondary)]"
@@ -212,7 +211,7 @@ function JourneyContent({
   }
 
   if (block.type === "footer") {
-    return <SiteFooter />;
+    return <SiteFooter ref={footerStitchRef} />;
   }
 
   return null;
@@ -222,7 +221,7 @@ export function InterleavedLanding() {
   const journeyRef = useRef<HTMLDivElement>(null);
   const heroStitchRef = useRef<HTMLDivElement>(null);
   const manifestoStitchRef = useRef<HTMLDivElement>(null);
-  const lateFoldRef = useRef<HTMLDivElement>(null);
+  const footerStitchRef = useRef<HTMLElement>(null);
   const spacerRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [reducedMotion, setReducedMotion] = useState(false);
 
@@ -243,7 +242,7 @@ export function InterleavedLanding() {
           journeyRef={journeyRef}
           heroStitchRef={heroStitchRef}
           manifestoStitchRef={manifestoStitchRef}
-          lateFoldRef={lateFoldRef}
+          footerStitchRef={footerStitchRef}
           reducedMotion={false}
         />
       ) : null}
@@ -268,9 +267,12 @@ export function InterleavedLanding() {
 
           if (block.type === "email") {
             return (
-              <div key="late-fold" ref={lateFoldRef}>
+              <div key="late-fold">
                 <JourneyContent block={block} />
-                <JourneyContent block={{ type: "footer" }} />
+                <JourneyContent
+                  block={{ type: "footer" }}
+                  footerStitchRef={footerStitchRef}
+                />
               </div>
             );
           }

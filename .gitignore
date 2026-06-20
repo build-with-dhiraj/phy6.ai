@@ -51,6 +51,7 @@ next-env.d.ts
 
 # favicon exploration artifacts (production assets live in public/)
 /brand/favicon-options/
+/brand/fonts/
 /public/favicon-options/
 /public/favicon-preview.html
 /public/favicon-preview-marek2.html

@@ -11,9 +11,6 @@ import {
   type JourneyGalleryBlock,
 } from "@/data/gallery-journey";
 import {
-  buildGalleryTimeline,
-  CROSSFADE,
-  SEGMENT_DUR,
   totalTimelineUnits,
   transitionTimelineUnits,
 } from "@/lib/gallery-timeline";
@@ -31,44 +28,26 @@ function waitForImage(img: HTMLImageElement) {
   });
 }
 
+const LEONHARD_INDEX = 0;
+const MARC_INDEX = 1;
+const ALEXANDR_INDEX = 2;
+const EMMANUEL_INDEX = 3;
+
 function clamp01(n: number) {
   return Math.max(0, Math.min(1, n));
 }
 
-type GalleryJourneyBackdropProps = {
-  journeyRef: React.RefObject<HTMLDivElement | null>;
-  heroStitchRef: React.RefObject<HTMLDivElement | null>;
-  manifestoStitchRef: React.RefObject<HTMLDivElement | null>;
-  lateFoldRef: React.RefObject<HTMLDivElement | null>;
-  reducedMotion: boolean;
-};
-
-function frameIndexFromTime(
-  time: number,
-  transitions: ReturnType<typeof flattenGalleryTransitions>,
+function setGalleryOpacities(
+  images: HTMLImageElement[],
+  opacities: number[],
 ) {
-  let at = 0;
-  for (const transition of transitions) {
-    const unit = transitionTimelineUnits(transition);
-    if (time <= at) return transition.from;
-    if (time < at + unit) {
-      const crossfadeEnd = at + CROSSFADE * SEGMENT_DUR;
-      if (time <= at) return transition.from;
-      if (time >= crossfadeEnd) return transition.to;
-      return transition.to;
-    }
-    at += unit;
-  }
-  const last = transitions[transitions.length - 1];
-  return last?.to ?? 0;
-}
-
-function crossfadeEndTime(
-  transitions: ReturnType<typeof flattenGalleryTransitions>,
-  transitionIndex: number,
-) {
-  const atStart = totalTimelineUnits(transitions.slice(0, transitionIndex));
-  return atStart + CROSSFADE * SEGMENT_DUR;
+  images.forEach((img, i) => {
+    gsap.set(img, {
+      opacity: opacities[i] ?? 0,
+      scale: 1,
+      clipPath: "none",
+    });
+  });
 }
 
 /** Crossfade 0→1 while fold bottom moves from viewport bottom (vh) to top (0). */
@@ -78,11 +57,19 @@ function stitchCrossfadeProgress(bottom: number, viewportHeight: number) {
   return clamp01(1 - bottom / viewportHeight);
 }
 
+type GalleryJourneyBackdropProps = {
+  journeyRef: React.RefObject<HTMLDivElement | null>;
+  heroStitchRef: React.RefObject<HTMLDivElement | null>;
+  manifestoStitchRef: React.RefObject<HTMLDivElement | null>;
+  footerStitchRef: React.RefObject<HTMLElement | null>;
+  reducedMotion: boolean;
+};
+
 export function GalleryJourneyBackdrop({
   journeyRef,
   heroStitchRef,
   manifestoStitchRef,
-  lateFoldRef,
+  footerStitchRef,
   reducedMotion,
 }: GalleryJourneyBackdropProps) {
   const pinRef = useRef<HTMLDivElement>(null);
@@ -97,70 +84,115 @@ export function GalleryJourneyBackdrop({
     if (!journey || !pin) return;
 
     let ctx: gsap.Context | null = null;
-    let timeline: gsap.core.Timeline | null = null;
     const triggers: ScrollTrigger[] = [];
-    const allTransitions = flattenGalleryTransitions(LANDING_JOURNEY);
-    const crossfadeDur = CROSSFADE * SEGMENT_DUR;
-    const timeMarcHold = crossfadeEndTime(allTransitions, 0);
-    const timeAlexandrHold = crossfadeEndTime(allTransitions, 1);
-    const timeEmmanuelHold = crossfadeEndTime(allTransitions, 2);
 
     const updateProgress = () => {
       if (
-        !timeline ||
         !heroStitchRef.current ||
         !manifestoStitchRef.current ||
-        !lateFoldRef.current ||
+        !footerStitchRef.current ||
         !journey
       ) {
         return;
       }
 
+      const images = imageRefs.current.filter(Boolean) as HTMLImageElement[];
       const heroRect = heroStitchRef.current.getBoundingClientRect();
       const manifestoRect = manifestoStitchRef.current.getBoundingClientRect();
-      const lateFoldRect = lateFoldRef.current.getBoundingClientRect();
+      const footerRect = footerStitchRef.current.getBoundingClientRect();
       const viewportHeight = window.innerHeight;
 
-      let time: number;
+      const applyHold = (frameIndex: number) => {
+        const opacities = images.map((_, i) => (i === frameIndex ? 1 : 0));
+        setGalleryOpacities(images, opacities);
+        setSegmentIndex((prev) => (prev !== frameIndex ? frameIndex : prev));
+      };
+
+      const applyLinearCrossfade = (
+        fromIdx: number,
+        toIdx: number,
+        segmentP: number,
+      ) => {
+        const p = clamp01(segmentP);
+        const opacities = images.map((_, i) => {
+          if (i === fromIdx) return 1 - p;
+          if (i === toIdx) return p;
+          return 0;
+        });
+        setGalleryOpacities(images, opacities);
+        const counterFrame = p >= 0.5 ? toIdx : fromIdx;
+        setSegmentIndex((prev) =>
+          prev !== counterFrame ? counterFrame : prev,
+        );
+      };
+
+      /** Alexandr above footer; Emmanuel fades in only below footer bottom. */
+      const applyFooterSplit = (footerBottom: number) => {
+        const segmentP = stitchCrossfadeProgress(
+          footerBottom,
+          viewportHeight,
+        );
+        const clipBottom = Math.max(0, footerBottom);
+
+        images.forEach((img, i) => {
+          if (i !== ALEXANDR_INDEX && i !== EMMANUEL_INDEX) {
+            gsap.set(img, { opacity: 0, scale: 1, clipPath: "none" });
+          }
+        });
+
+        const alexandr = images[ALEXANDR_INDEX];
+        const emmanuel = images[EMMANUEL_INDEX];
+        if (alexandr) {
+          gsap.set(alexandr, { opacity: 1, scale: 1, clipPath: "none" });
+        }
+        if (emmanuel) {
+          const clipPath =
+            segmentP >= 1 || clipBottom <= 0
+              ? "none"
+              : `inset(${clipBottom}px 0 0 0)`;
+          gsap.set(emmanuel, {
+            opacity: segmentP,
+            scale: 1,
+            clipPath,
+          });
+        }
+
+        const counterFrame =
+          segmentP >= 0.5 ? EMMANUEL_INDEX : ALEXANDR_INDEX;
+        setSegmentIndex((prev) =>
+          prev !== counterFrame ? counterFrame : prev,
+        );
+      };
 
       if (heroRect.top > 0) {
-        time = 0;
+        applyHold(LEONHARD_INDEX);
       } else if (heroRect.bottom > viewportHeight) {
-        time = 0;
+        applyHold(LEONHARD_INDEX);
       } else if (heroRect.bottom > 0) {
         const segmentP = stitchCrossfadeProgress(
           heroRect.bottom,
           viewportHeight,
         );
-        time = segmentP * crossfadeDur;
+        applyLinearCrossfade(LEONHARD_INDEX, MARC_INDEX, segmentP);
       } else if (manifestoRect.top > 0) {
-        time = timeMarcHold;
+        applyHold(MARC_INDEX);
       } else if (manifestoRect.bottom > viewportHeight) {
-        time = timeMarcHold;
+        applyHold(MARC_INDEX);
       } else if (manifestoRect.bottom > 0) {
         const segmentP = stitchCrossfadeProgress(
           manifestoRect.bottom,
           viewportHeight,
         );
-        time = 1 + segmentP * crossfadeDur;
-      } else if (lateFoldRect.top > 0) {
-        time = timeAlexandrHold;
-      } else if (lateFoldRect.bottom > viewportHeight) {
-        time = timeAlexandrHold;
-      } else if (lateFoldRect.bottom > 0) {
-        const segmentP = stitchCrossfadeProgress(
-          lateFoldRect.bottom,
-          viewportHeight,
-        );
-        time = 2 + segmentP * crossfadeDur;
+        applyLinearCrossfade(MARC_INDEX, ALEXANDR_INDEX, segmentP);
+      } else if (footerRect.top > viewportHeight) {
+        applyHold(ALEXANDR_INDEX);
+      } else if (footerRect.bottom > viewportHeight) {
+        applyHold(ALEXANDR_INDEX);
+      } else if (footerRect.bottom > 0) {
+        applyFooterSplit(footerRect.bottom);
       } else {
-        time = timeEmmanuelHold;
+        applyHold(EMMANUEL_INDEX);
       }
-
-      timeline.time(time);
-
-      const frameIdx = frameIndexFromTime(time, allTransitions);
-      setSegmentIndex((prev) => (prev !== frameIdx ? frameIdx : prev));
     };
 
     const setup = async () => {
@@ -174,12 +206,6 @@ export function GalleryJourneyBackdrop({
             scale: 1,
             force3D: true,
           });
-        });
-
-        timeline = buildGalleryTimeline({
-          frames: GALLERY_FRAMES,
-          transitions: allTransitions,
-          imageRefs: images,
         });
 
         triggers.push(
@@ -236,7 +262,7 @@ export function GalleryJourneyBackdrop({
       triggers.forEach((t) => t.kill());
       ctx?.revert();
     };
-  }, [journeyRef, heroStitchRef, manifestoStitchRef, lateFoldRef, reducedMotion]);
+  }, [journeyRef, heroStitchRef, manifestoStitchRef, footerStitchRef, reducedMotion]);
 
   return (
     <div
