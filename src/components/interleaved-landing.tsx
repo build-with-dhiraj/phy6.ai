@@ -30,10 +30,12 @@ function JourneyContent({
   block,
   heroStitchRef,
   manifestoStitchRef,
+  footerStitchRef,
 }: {
   block: { type: string };
   heroStitchRef?: React.RefObject<HTMLDivElement | null>;
   manifestoStitchRef?: React.RefObject<HTMLDivElement | null>;
+  footerStitchRef?: React.RefObject<HTMLElement | null>;
 }) {
   if (block.type === "hero") {
     return (
@@ -209,7 +211,7 @@ function JourneyContent({
   }
 
   if (block.type === "footer") {
-    return <SiteFooter />;
+    return <SiteFooter ref={footerStitchRef} />;
   }
 
   return null;
@@ -219,7 +221,7 @@ export function InterleavedLanding() {
   const journeyRef = useRef<HTMLDivElement>(null);
   const heroStitchRef = useRef<HTMLDivElement>(null);
   const manifestoStitchRef = useRef<HTMLDivElement>(null);
-  const lateFoldRef = useRef<HTMLDivElement>(null);
+  const footerStitchRef = useRef<HTMLElement>(null);
   const spacerRefs = useRef<(HTMLDivElement | null)[]>([]);
   const [reducedMotion, setReducedMotion] = useState(false);
 
@@ -240,7 +242,7 @@ export function InterleavedLanding() {
           journeyRef={journeyRef}
           heroStitchRef={heroStitchRef}
           manifestoStitchRef={manifestoStitchRef}
-          lateFoldRef={lateFoldRef}
+          footerStitchRef={footerStitchRef}
           reducedMotion={false}
         />
       ) : null}
@@ -265,9 +267,12 @@ export function InterleavedLanding() {
 
           if (block.type === "email") {
             return (
-              <div key="late-fold" ref={lateFoldRef}>
+              <div key="late-fold">
                 <JourneyContent block={block} />
-                <JourneyContent block={{ type: "footer" }} />
+                <JourneyContent
+                  block={{ type: "footer" }}
+                  footerStitchRef={footerStitchRef}
+                />
               </div>
             );
           }

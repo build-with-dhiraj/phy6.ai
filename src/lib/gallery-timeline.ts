@@ -24,7 +24,7 @@ export function buildGalleryTimeline({
   transitions,
   imageRefs,
 }: BuildTimelineArgs): gsap.core.Timeline {
-  const tl = gsap.timeline({ paused: true, defaults: { ease: "power2.out" } });
+  const tl = gsap.timeline({ paused: true, defaults: { ease: "none" } });
   let at = 0;
 
   for (const transition of transitions) {
@@ -48,7 +48,7 @@ export function buildGalleryTimeline({
       {
         opacity: 0,
         duration: CROSSFADE * SEGMENT_DUR,
-        ease: "power2.in",
+        ease: "none",
       },
       at,
     );
@@ -60,7 +60,7 @@ export function buildGalleryTimeline({
         opacity: 1,
         scale: 1,
         duration: CROSSFADE * SEGMENT_DUR,
-        ease: "power2.out",
+        ease: "none",
       },
       at,
     );

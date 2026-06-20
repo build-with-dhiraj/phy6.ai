@@ -1,3 +1,4 @@
+import { forwardRef } from "react";
 import { Mail } from "lucide-react";
 import { Wordmark } from "@/components/brand/wordmark";
 import { FiligreeDivider } from "@/components/ornaments";
@@ -37,11 +38,11 @@ function GitHubGlyph({ className }: { className?: string }) {
   );
 }
 
-export function SiteFooter() {
+export const SiteFooter = forwardRef<HTMLElement>(function SiteFooter(_, ref) {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="w-full bg-[var(--color-surface)]">
+    <footer ref={ref} className="w-full bg-[var(--color-surface)]">
       <FiligreeDivider />
       <div className="mx-auto flex max-w-[var(--measure)] flex-col items-center px-[var(--space-4)] pb-[var(--space-5)] pt-[var(--space-4)] text-center">
         <Wordmark variant="footer" />
@@ -91,4 +92,4 @@ export function SiteFooter() {
       </div>
     </footer>
   );
-}
+});
