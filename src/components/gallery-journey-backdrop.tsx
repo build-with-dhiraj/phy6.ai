@@ -108,6 +108,7 @@ export function GalleryJourneyBackdrop({
         setSegmentIndex((prev) => (prev !== frameIndex ? frameIndex : prev));
       };
 
+      /** Incoming frame fades over full outgoing — avoids parchment wash between layers. */
       const applyLinearCrossfade = (
         fromIdx: number,
         toIdx: number,
@@ -115,7 +116,7 @@ export function GalleryJourneyBackdrop({
       ) => {
         const p = clamp01(segmentP);
         const opacities = images.map((_, i) => {
-          if (i === fromIdx) return 1 - p;
+          if (i === fromIdx) return p >= 1 ? 0 : 1;
           if (i === toIdx) return p;
           return 0;
         });
